@@ -2,7 +2,6 @@ package io.vertx.ext.prometheus;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
-import io.vertx.core.Closeable;
 import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.datagram.DatagramSocket;
@@ -16,16 +15,35 @@ import io.vertx.core.metrics.impl.DummyVertxMetrics;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.spi.metrics.*;
-import io.vertx.ext.prometheus.metrics.*;
+import io.vertx.core.spi.metrics.DatagramSocketMetrics;
+import io.vertx.core.spi.metrics.EventBusMetrics;
+import io.vertx.core.spi.metrics.HttpClientMetrics;
+import io.vertx.core.spi.metrics.HttpServerMetrics;
+import io.vertx.core.spi.metrics.PoolMetrics;
+import io.vertx.core.spi.metrics.TCPMetrics;
+import io.vertx.ext.prometheus.metrics.DatagramSocketPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.EventBusPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.HTTPClientPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.HTTPServerPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.NetClientPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.NetServerPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.PoolPrometheusMetrics;
+import io.vertx.ext.prometheus.metrics.PrometheusMetrics;
 import io.vertx.ext.prometheus.metrics.factories.CounterFactory;
 import io.vertx.ext.prometheus.metrics.factories.GaugeFactory;
 import io.vertx.ext.prometheus.metrics.factories.HistogramFactory;
-import io.vertx.ext.prometheus.server.MetricsServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static io.vertx.ext.prometheus.MetricsType.*;
+import static io.vertx.ext.prometheus.MetricsType.DatagramSocket;
+import static io.vertx.ext.prometheus.MetricsType.EventBus;
+import static io.vertx.ext.prometheus.MetricsType.HTTPClient;
+import static io.vertx.ext.prometheus.MetricsType.HTTPServer;
+import static io.vertx.ext.prometheus.MetricsType.NetClient;
+import static io.vertx.ext.prometheus.MetricsType.NetServer;
+import static io.vertx.ext.prometheus.MetricsType.Pools;
+import static io.vertx.ext.prometheus.MetricsType.Timers;
+import static io.vertx.ext.prometheus.MetricsType.Verticles;
 
 public final class VertxPrometheusMetrics extends DummyVertxMetrics {
   private final @NotNull Vertx vertx;
@@ -36,8 +54,6 @@ public final class VertxPrometheusMetrics extends DummyVertxMetrics {
   private final @NotNull CounterFactory counters;
   private final @NotNull HistogramFactory histograms;
 
-  private @Nullable Closeable server;
-
   public VertxPrometheusMetrics(@NotNull Vertx vertx, @NotNull VertxPrometheusOptions options) {
     this.vertx = vertx;
     this.options = options;
@@ -46,16 +62,6 @@ public final class VertxPrometheusMetrics extends DummyVertxMetrics {
     this.gauges = new GaugeFactory(options.getRegistry());
     this.counters = new CounterFactory(options.getRegistry());
     this.histograms = new HistogramFactory(options.getRegistry());
-  }
-
-  @Override
-  public void eventBusInitialized(@NotNull EventBus bus) {
-    if (options.isEmbeddedServerEnabled()) {
-      server = MetricsServer
-          .create(vertx)
-          .apply(options.getRegistry(), options.getFormat())
-          .apply(options.getAddress());
-    }
   }
 
   @Override
@@ -139,10 +145,6 @@ public final class VertxPrometheusMetrics extends DummyVertxMetrics {
 
   @Override
   public void close() {
-    if (server != null) {
-      server.close(event -> { /* do nothing */ });
-    }
-
     gauges.close();
     counters.close();
     histograms.close();
