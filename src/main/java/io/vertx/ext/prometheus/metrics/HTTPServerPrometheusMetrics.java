@@ -29,7 +29,7 @@ public final class HTTPServerPrometheusMetrics extends TCPPrometheusMetrics impl
 
   @Override
   public @NotNull HTTPRequestMetrics.Metric requestBegin(@Nullable Void metric, @NotNull HttpServerRequest request) {
-    return requests.begin(request.method(), request.path());
+    return requests.begin(request.method(), request.host());
   }
 
   @Override

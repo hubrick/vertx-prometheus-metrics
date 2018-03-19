@@ -22,10 +22,10 @@ public final class HTTPRequestMetrics {
     proocessTime = new Stopwatch(name + "_requests", localAddress, histograms);
   }
 
-  public @NotNull Metric begin(@NotNull HttpMethod method, @NotNull String path) {
-    requests(method.name(), path, "active").inc();
-    requests(method.name(), path, "total").inc();
-    return new Metric(method, path, proocessTime.start());
+  public @NotNull Metric begin(@NotNull HttpMethod method, @NotNull String host) {
+    requests(method.name(), host, "active").inc();
+    requests(method.name(), host, "total").inc();
+    return new Metric(method, host, proocessTime.start());
   }
 
   public void reset(@NotNull Metric metric) {
@@ -58,8 +58,8 @@ public final class HTTPRequestMetrics {
     return requests(metric.method.name(), metric.path, state);
   }
 
-  private @NotNull Gauge.Child requests(@NotNull String method, @NotNull String path, @NotNull String state) {
-    return requests.labels(localAddress, method, path, state);
+  private @NotNull Gauge.Child requests(@NotNull String method, @NotNull String host, @NotNull String state) {
+    return requests.labels(localAddress, method, host, state);
   }
 
   public static final class Metric {

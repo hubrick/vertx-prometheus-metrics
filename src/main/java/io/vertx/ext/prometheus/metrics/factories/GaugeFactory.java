@@ -33,7 +33,7 @@ public class GaugeFactory {
    */
   public Gauge httpRequests(String name) {
     return gauges.computeIfAbsent("vertx_" + name + "_requests", key -> register(Gauge.build(key, "HTTP requests number")
-        .labelNames("local_address", "method", "path", "state")
+        .labelNames("local_address", "method", "host", "state")
         .create()));
   }
 

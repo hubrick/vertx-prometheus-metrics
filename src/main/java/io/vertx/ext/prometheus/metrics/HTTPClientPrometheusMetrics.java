@@ -73,7 +73,7 @@ public final class HTTPClientPrometheusMetrics extends TCPPrometheusMetrics impl
 
   @Override
   public @NotNull HTTPRequestMetrics.Metric requestBegin(@Nullable Void endpointMetric, @Nullable Void socketMetric, @NotNull SocketAddress localAddress, @NotNull SocketAddress remoteAddress, @NotNull HttpClientRequest request) {
-    return requests.begin(request.method(), request.path());
+    return requests.begin(request.method(), remoteAddress.host());
   }
 
   @Override
