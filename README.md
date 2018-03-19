@@ -1,12 +1,9 @@
 # vertx-prometheus-metrics
 
-[![Build Status](https://img.shields.io/travis/nolequen/vertx-prometheus-metrics.svg?branch=master)](https://travis-ci.org/nolequen/vertx-prometheus-metrics)
-[![Maven Central](https://img.shields.io/maven-central/v/su.nlq/vertx-prometheus-metrics.svg)](https://maven-badges.herokuapp.com/maven-central/su.nlq/vertx-prometheus-metrics)
-[![Dependency Status](https://www.versioneye.com/user/projects/596d0ea90fb24f00558fe198/badge.svg)](https://www.versioneye.com/user/projects/596d0ea90fb24f00558fe198)
-[![Codecov](https://codecov.io/gh/nolequen/vertx-prometheus-metrics/branch/master/graph/badge.svg)](https://codecov.io/gh/nolequen/vertx-prometheus-metrics)
-[![Codebeat](https://codebeat.co/badges/4c9127d1-d016-46e9-9348-c8c723266ea2)](https://codebeat.co/projects/github-com-nolequen-vertx-prometheus-metrics-master)
-
 [Prometheus](https://prometheus.io/) implementation of the [Vert.x Metrics SPI](http://vertx.io/docs/vertx-core/java/index.html#_metrics_spi).
+
+Based on [vertx-prometheus-metrics](https://github.com/nolequen/vertx-prometheus-metrics)
+
 
 ## Usage
 
@@ -15,7 +12,7 @@ You can find latest release on Maven Central.
 * Maven:
 ```xml
 <dependency>
-  <groupId>su.nlq</groupId>
+  <groupId>com.hubrick.vertx</groupId>
   <artifactId>vertx-prometheus-metrics</artifactId>
   <version>3.5.1</version>
 </dependency>
@@ -37,22 +34,14 @@ final Vertx vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
 
 | Metrics    | Vert.x     | Prometheus | 
 | ----------:| ----------:| ----------:|
-| **0.13.x** | 3.4.1      | 0.0.23     |
-| **0.14.x** | 3.4.2      | 0.0.26     |
-| **0.15.x** | 3.5.0      | 0.1.0      |
-Version adjust
-| **3.5.0**  | 3.5.0      | 0.1.0      |
 | **3.5.1**  | 3.5.1      | 0.2.0      |
 
 ## Options
 
 There are some special options you can use:
 
-* Enable or disable embedded server to expose metrics for Prometheus consumption via HTTP or check its state (enabled by default)
-* Specify host and port of the embedded server (`localhost:9090` by default)
 * Enable or disable specific `MetricsType` or check their state (all metrics are enabled by default)
 * Specify which Prometheus `CollectorRegistry` should be used (unless otherwise specified, the default one is used)
-* Specify the Prometheus `exposition format` (the default is `Text format`) 
 
 ## Metrics
 
