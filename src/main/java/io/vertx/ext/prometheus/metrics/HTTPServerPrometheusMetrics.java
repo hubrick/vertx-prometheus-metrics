@@ -1,5 +1,6 @@
 package io.vertx.ext.prometheus.metrics;
 
+import com.google.common.base.MoreObjects;
 import io.prometheus.client.CollectorRegistry;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
@@ -29,7 +30,7 @@ public final class HTTPServerPrometheusMetrics extends TCPPrometheusMetrics impl
 
   @Override
   public @NotNull HTTPRequestMetrics.Metric requestBegin(@Nullable Void metric, @NotNull HttpServerRequest request) {
-    return requests.begin(request.method(), request.host());
+    return requests.begin(request.method(), MoreObjects.firstNonNull(request.host(), "unknown"));
   }
 
   @Override
