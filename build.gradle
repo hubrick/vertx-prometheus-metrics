@@ -56,6 +56,15 @@ publishing {
         }
     }
 }
+publishing {
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            name "hubrick-snapshots"
+            url "https://nexus.hubrick.net/repository/hubrick-snapshots/"
+        }
+    }
+}
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
