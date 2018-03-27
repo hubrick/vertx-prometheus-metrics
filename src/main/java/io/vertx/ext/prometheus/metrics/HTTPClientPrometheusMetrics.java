@@ -6,6 +6,7 @@ import io.prometheus.client.Histogram;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.http.impl.HttpClientRequestBase;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpClientMetrics;
 import io.vertx.ext.prometheus.metrics.counters.EndpointMetrics;
@@ -74,7 +75,7 @@ public final class HTTPClientPrometheusMetrics extends TCPPrometheusMetrics impl
 
   @Override
   public @NotNull HTTPRequestMetrics.Metric requestBegin(@Nullable Void endpointMetric, @Nullable Void socketMetric, @NotNull SocketAddress localAddress, @NotNull SocketAddress remoteAddress, @NotNull HttpClientRequest request) {
-    return requests.begin(request.method(), MoreObjects.firstNonNull(request.getHost(), remoteAddress.host()));
+    return requests.begin(request.method(), MoreObjects.firstNonNull(((HttpClientRequestBase)request).host(), remoteAddress.host()));
   }
 
   @Override
