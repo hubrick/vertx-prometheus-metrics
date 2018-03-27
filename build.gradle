@@ -1,14 +1,26 @@
 group 'com.hubrick.vertx'
-version '3.5.1-HUBRICK-SNAPSHOT'
+version '3.6.0-HUBRICK-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'jacoco'
+apply plugin: 'maven-publish'
+apply plugin: 'maven-publish-auth'
 
 sourceCompatibility = 1.8
 
+buildscript {
+    dependencies {
+        classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
+    }
+    repositories {
+        mavenCentral()
+    }
+}
+
 repositories {
-  mavenCentral()
+    mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
@@ -16,12 +28,12 @@ dependencies {
 
     compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
 
-    compile group: 'io.vertx', name: 'vertx-core', version: '3.5.1'
+    compile group: 'io.vertx', name: 'vertx-core', version: '3.6.0-SNAPSHOT'
     compile group: 'io.vertx', name: 'vertx-web', version: '3.5.1'
 
-    compile group: 'io.prometheus', name: 'simpleclient', version: '0.2.0'
-    compile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.2.0'
-    compile group: 'io.prometheus', name: 'simpleclient_common', version: '0.2.0'
+    compile group: 'io.prometheus', name: 'simpleclient', version: '0.3.0'
+    compile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.3.0'
+    compile group: 'io.prometheus', name: 'simpleclient_common', version: '0.3.0'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'io.vertx', name: 'vertx-unit', version: '3.5.1'
@@ -29,74 +41,33 @@ dependencies {
 }
 
 jacocoTestReport {
-  reports {
-    xml.enabled true
-    html.enabled false
-  }
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
 }
 
 check.dependsOn jacocoTestReport
 
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { final MavenDeployment deployment -> signing.signPom(deployment) }
-
-      def user = project.hasProperty("ossrhUsername") ? ossrhUsername : ''
-      def password = project.hasProperty("ossrhUsername") ? ossrhPassword : ''
-
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: user, password: password)
-      }
-
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: user, password: password)
-      }
-
-      pom.project {
-        name 'Vert.x Prometheus Metrics'
-        description 'Prometheus implementation of the Vert.x Metrics SPI'
-        url 'https://github.com/hubrick/vertx-prometheus-metrics'
-        licenses {
-          license {
-            name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution 'repo'
-          }
-          license {
-            name "Eclipse Public License - v 1.0"
-            url "http://www.eclipse.org/legal/epl-v10.html"
-            distribution 'repo'
-          }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
         }
-        scm {
-          url 'https://github.com/hubrick/vertx-prometheus-metrics'
-          connection 'scm:git:git://github.com/hubrick/vertx-prometheus-metrics.git'
-          developerConnection 'scm:git:ssh://github.com/hubrick/vertx-prometheus-metrics.git'
-        }
-        developers {
-          developer {
-            name "Hubrick"
-            email "oss@hubrick.com"
-            url "http://www.hubrick.com/"
-          }
-        }
-      }
     }
-  }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = 'javadoc'
-  from javadoc.destinationDir
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 artifacts {
-  archives sourcesJar, javadocJar
+    archives sourcesJar, javadocJar
 }
 
