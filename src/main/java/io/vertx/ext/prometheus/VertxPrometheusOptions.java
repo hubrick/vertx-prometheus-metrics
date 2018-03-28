@@ -12,12 +12,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Set;
 
 public final class VertxPrometheusOptions extends MetricsOptions {
-  private static final @NotNull JsonArray EMPTY_METRICS = new JsonArray(Collections.emptyList());
+  private static final @NotNull JsonArray EMPTY_ARRAY = new JsonArray(Collections.emptyList());
 
   private static final @NotNull String DEFAULT_HOST = "localhost";
   private static final int DEFAULT_PORT = 9090;
+
+  private static final String HOST_CONFIG_JSON_KEY = "host";
+  private static final String PORT_CONFIG_JSON_KEY = "port";
+  private static final String METRICS_CONFIG_JSON_KEY = "metrics";
+  private static final String CLIENT_METRIC_LABEL_VALUES_CONFIG_JSON_KEY = "clientMetricLabelValues";
+  private static final String SERVER_METRIC_LABEL_VALUES_CONFIG_JSON_KEY = "serverMetricLabelValues";
 
   private final @NotNull EnumSet<MetricsType> metrics;
 
@@ -27,9 +34,15 @@ public final class VertxPrometheusOptions extends MetricsOptions {
   private int port = DEFAULT_PORT;
   private boolean embeddedServerEnabled = true;
 
+  private final @NotNull EnumSet<MetricLabel> clientMetricLabelValues;
+  private final @NotNull EnumSet<MetricLabel> serverMetricLabelValues;
+
+
   public VertxPrometheusOptions() {
     super();
     metrics = EnumSet.allOf(MetricsType.class);
+    clientMetricLabelValues = EnumSet.of(MetricLabel.useHost);
+    serverMetricLabelValues = EnumSet.of(MetricLabel.useHost);
   }
 
   public VertxPrometheusOptions(@NotNull VertxPrometheusOptions other) {
@@ -38,24 +51,39 @@ public final class VertxPrometheusOptions extends MetricsOptions {
     host = other.host;
     port = other.port;
     metrics = EnumSet.copyOf(other.metrics);
+    clientMetricLabelValues = EnumSet.copyOf(other.clientMetricLabelValues);
+    serverMetricLabelValues = EnumSet.copyOf(other.serverMetricLabelValues);
   }
 
   public VertxPrometheusOptions(@NotNull JsonObject json) {
     super(json);
-    host = json.getString("host", DEFAULT_HOST);
-    port = json.getInteger("port", DEFAULT_PORT);
+    host = json.getString(HOST_CONFIG_JSON_KEY, DEFAULT_HOST);
+    port = json.getInteger(PORT_CONFIG_JSON_KEY, DEFAULT_PORT);
+
     metrics = EnumSet.noneOf(MetricsType.class);
-    for (Object metric : json.getJsonArray("metrics", EMPTY_METRICS).getList()) {
-      metrics.add(MetricsType.valueOf(metric.toString()));
+    for (Object metric : json.getJsonArray(METRICS_CONFIG_JSON_KEY, EMPTY_ARRAY).getList()) {
+      metrics.add(MetricsType.valueOf(String.valueOf(metric)));
+    }
+
+    clientMetricLabelValues = EnumSet.noneOf(MetricLabel.class);
+    for (Object clientMetricLabelValue : json.getJsonArray(CLIENT_METRIC_LABEL_VALUES_CONFIG_JSON_KEY, EMPTY_ARRAY).getList()) {
+      clientMetricLabelValues.add(MetricLabel.valueOf(String.valueOf(clientMetricLabelValue)));
+    }
+
+    serverMetricLabelValues = EnumSet.noneOf(MetricLabel.class);
+    for (Object serverMetricLabelValue : json.getJsonArray(SERVER_METRIC_LABEL_VALUES_CONFIG_JSON_KEY, EMPTY_ARRAY).getList()) {
+      serverMetricLabelValues.add(MetricLabel.valueOf(String.valueOf(serverMetricLabelValue)));
     }
   }
 
   @Override
   public @NotNull JsonObject toJson() {
     final JsonObject entries = super.toJson();
-    entries.put("host", host);
-    entries.put("port", port);
-    entries.put("metrics", new JsonArray(new ArrayList<>(metrics)));
+    entries.put(HOST_CONFIG_JSON_KEY, host);
+    entries.put(PORT_CONFIG_JSON_KEY, port);
+    entries.put(METRICS_CONFIG_JSON_KEY, new JsonArray(new ArrayList<>(metrics)));
+    entries.put(CLIENT_METRIC_LABEL_VALUES_CONFIG_JSON_KEY, new JsonArray(new ArrayList<>(clientMetricLabelValues)));
+    entries.put(SERVER_METRIC_LABEL_VALUES_CONFIG_JSON_KEY, new JsonArray(new ArrayList<>(serverMetricLabelValues)));
     return entries;
   }
 
@@ -186,5 +214,65 @@ public final class VertxPrometheusOptions extends MetricsOptions {
   public @NotNull VertxPrometheusOptions setFormat(@NotNull ExpositionFormat format) {
     this.format = format;
     return this;
+  }
+
+  /**
+   * Enable client metric labels.
+   *
+   * Beware of your use-case, you might end up with a very high cardinality.
+   *
+   * @param type additional metric labels to enable
+   * @return a reference to this, so the API can be used fluently
+   */
+  public @NotNull VertxPrometheusOptions enableForClient(@NotNull MetricLabel type) {
+    clientMetricLabelValues.add(type);
+    return this;
+  }
+
+  /**
+   * Disable client metric labels.
+   *
+   * Beware of your use-case, you might end up with a very high cardinality.
+   *
+   * @param type additional metric labels to to disable
+   * @return a reference to this, so the API can be used fluently
+   */
+  public @NotNull VertxPrometheusOptions disableForClient(@NotNull MetricLabel type) {
+    clientMetricLabelValues.remove(type);
+    return this;
+  }
+
+  /**
+   * Enable server metric labels.
+   *
+   * Beware of your use-case, you might end up with a very high cardinality.
+   *
+   * @param type additional metric labels to enable
+   * @return a reference to this, so the API can be used fluently
+   */
+  public @NotNull VertxPrometheusOptions enableForServer(@NotNull MetricLabel type) {
+    serverMetricLabelValues.add(type);
+    return this;
+  }
+
+  /**
+   * Disable server metric labels.
+   *
+   * Beware of your use-case, you might end up with a very high cardinality.
+   *
+   * @param type additional metric labels to to disable
+   * @return a reference to this, so the API can be used fluently
+   */
+  public @NotNull VertxPrometheusOptions disableForServer(@NotNull MetricLabel type) {
+    serverMetricLabelValues.remove(type);
+    return this;
+  }
+
+  Set<MetricLabel> getEnabledClientMetricLabelValues() {
+    return Collections.unmodifiableSet(clientMetricLabelValues);
+  }
+
+  Set<MetricLabel> getEnabledServerMetricLabelValues() {
+    return Collections.unmodifiableSet(serverMetricLabelValues);
   }
 }

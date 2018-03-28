@@ -88,14 +88,15 @@ public final class VertxPrometheusMetrics extends DummyVertxMetrics {
   @Override
   public @NotNull HttpServerMetrics<?, ?, ?> createMetrics(@NotNull HttpServer httpServer, @NotNull SocketAddress localAddress, @NotNull HttpServerOptions httpServerOptions) {
     return options.isEnabled(HTTPServer)
-        ? new HTTPServerPrometheusMetrics(options.getRegistry(), localAddress, gauges, counters, histograms)
+        ? new HTTPServerPrometheusMetrics(options.getRegistry(), options.getEnabledServerMetricLabelValues(), localAddress, gauges, counters, histograms)
         : super.createMetrics(httpServer, localAddress, httpServerOptions);
   }
 
   @Override
   public @NotNull HttpClientMetrics<?, ?, ?, ?, ?> createMetrics(@NotNull HttpClient client, @NotNull HttpClientOptions httpClientOptions) {
     return options.isEnabled(HTTPClient)
-        ? new HTTPClientPrometheusMetrics(options.getRegistry(), getLocalAddress(httpClientOptions.getLocalAddress()), gauges, counters, histograms)
+        ? new HTTPClientPrometheusMetrics(options.getRegistry(), options.getEnabledClientMetricLabelValues(),
+            getLocalAddress(httpClientOptions.getLocalAddress()), gauges, counters, histograms)
         : super.createMetrics(client, httpClientOptions);
   }
 

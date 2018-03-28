@@ -7,6 +7,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.HttpServerMetrics;
+import io.vertx.ext.prometheus.MetricLabel;
 import io.vertx.ext.prometheus.metrics.counters.HTTPRequestMetrics;
 import io.vertx.ext.prometheus.metrics.counters.WebsocketGauge;
 import io.vertx.ext.prometheus.metrics.factories.CounterFactory;
@@ -15,21 +16,25 @@ import io.vertx.ext.prometheus.metrics.factories.HistogramFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Set;
+
 public final class HTTPServerPrometheusMetrics extends TCPPrometheusMetrics implements HttpServerMetrics<HTTPRequestMetrics.Metric, Void, Void> {
   private static final @NotNull String NAME = "httpserver";
 
   private final @NotNull HTTPRequestMetrics requests;
   private final @NotNull WebsocketGauge websockets;
+  private final @NotNull Set<MetricLabel> enabledServerMetricLabelValues;
 
-  public HTTPServerPrometheusMetrics(@NotNull CollectorRegistry registry, @NotNull SocketAddress localAddress, @NotNull GaugeFactory gauges, @NotNull CounterFactory counters, @NotNull HistogramFactory histograms) {
+  public HTTPServerPrometheusMetrics(@NotNull CollectorRegistry registry, @NotNull Set<MetricLabel> enabledServerMetricLabelValues, @NotNull SocketAddress localAddress, @NotNull GaugeFactory gauges, @NotNull CounterFactory counters, @NotNull HistogramFactory histograms) {
     super(registry, NAME, localAddress.toString(), gauges, counters);
     websockets = new WebsocketGauge(NAME, localAddress.toString(), gauges);
-    requests = new HTTPRequestMetrics(NAME, localAddress.toString(), gauges, counters, histograms);
+    requests = new HTTPRequestMetrics(NAME, localAddress.toString(), gauges, enabledServerMetricLabelValues, counters, histograms);
+    this.enabledServerMetricLabelValues = enabledServerMetricLabelValues;
   }
 
   @Override
   public @NotNull HTTPRequestMetrics.Metric requestBegin(@Nullable Void metric, @NotNull HttpServerRequest request) {
-    return requests.begin(request.method(), request.path());
+    return requests.begin(request.method(), request.path(), request.host());
   }
 
   @Override
@@ -39,7 +44,7 @@ public final class HTTPServerPrometheusMetrics extends TCPPrometheusMetrics impl
 
   @Override
   public @NotNull HTTPRequestMetrics.Metric responsePushed(@Nullable Void metric, @NotNull HttpMethod method, @NotNull String uri, @NotNull HttpServerResponse response) {
-    return requests.begin(method, uri);
+    return requests.begin(method, uri, "");
   }
 
   @Override

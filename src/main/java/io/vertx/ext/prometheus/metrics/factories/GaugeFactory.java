@@ -2,8 +2,12 @@ package io.vertx.ext.prometheus.metrics.factories;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
+import io.vertx.ext.prometheus.MetricLabel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -29,11 +33,24 @@ public class GaugeFactory {
 
   /**
    * @param name The name of the counter, without prefix and suffix.
+   * @param enabledMetricLabelValues The enabled metric labels for this metric
    * @return A gauge for http requests, identified by the given name. Gauges with the same name are shared.
    */
-  public Gauge httpRequests(String name) {
+  public Gauge httpRequests(String name, final Set<MetricLabel> enabledMetricLabelValues) {
+    final List<String> labelNames = new ArrayList<>();
+    labelNames.add("local_address");
+    labelNames.add("method");
+    if (enabledMetricLabelValues.contains(MetricLabel.useHost)) {
+      labelNames.add("host");
+    }
+    if (enabledMetricLabelValues.contains(MetricLabel.usePath)) {
+      labelNames.add("path");
+    }
+
+    labelNames.add("state");
+
     return gauges.computeIfAbsent("vertx_" + name + "_requests", key -> register(Gauge.build(key, "HTTP requests number")
-        .labelNames("local_address", "method", "path", "state")
+        .labelNames(labelNames.toArray(new String[labelNames.size()]))
         .create()));
   }
 

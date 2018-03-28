@@ -12,6 +12,11 @@ import java.util.concurrent.TimeUnit;
  * @author jansorg
  */
 public class HTTPServerPrometheusMetricsTest extends PrometheusMetricsTestCase {
+
+  public HTTPServerPrometheusMetricsTest() {
+    super(options -> options.enableForClient(MetricLabel.usePath).enableForClient(MetricLabel.usePath));
+  }
+
   @Test
   public void testMultipleServers(TestContext context) {
     await(2, TimeUnit.SECONDS, async -> vertx().createHttpServer(new HttpServerOptions().setPort(10010).setHost("127.0.0.1"))
@@ -37,8 +42,8 @@ public class HTTPServerPrometheusMetricsTest extends PrometheusMetricsTestCase {
       context.assertTrue(body.contains("vertx_httpserver_responses{local_address=\"127.0.0.1:10020\",code=\"200\",} 1.0\n"));
 
       //client metrics
-      context.assertTrue(body.contains("vertx_httpclient_requests{local_address=\"127.0.0.1\",method=\"GET\",path=\"/clientRequest1\",state=\"total\",} 1.0\n"));
-      context.assertTrue(body.contains("vertx_httpclient_requests{local_address=\"127.0.0.1\",method=\"GET\",path=\"/clientRequest2\",state=\"total\",} 1.0\n"));
+      context.assertTrue(body.contains("vertx_httpclient_requests{local_address=\"127.0.0.1\",method=\"GET\",host=\"127.0.0.1\",path=\"/clientRequest1\",state=\"total\",} 1.0\n"));
+      context.assertTrue(body.contains("vertx_httpclient_requests{local_address=\"127.0.0.1\",method=\"GET\",host=\"127.0.0.1\",path=\"/clientRequest2\",state=\"total\",} 1.0\n"));
     }));
   }
 
